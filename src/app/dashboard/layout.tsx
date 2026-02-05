@@ -7,7 +7,6 @@ import {
 	FileText,
 	LayoutDashboard,
 	LogOut,
-	Sparkles,
 	User,
 } from "lucide-react";
 import Link from "next/link";
@@ -35,7 +34,6 @@ export default function DashboardLayout({
 				<div className="flex flex-col h-full">
 					{/* Logo */}
 					<div className="flex items-center space-x-2 px-6 py-4 border-b border-gray-200">
-						<Sparkles className="w-8 h-8 text-primary-600" />
 						<span className="text-lg font-bold text-gray-900">
 							Resume Analyzer
 						</span>

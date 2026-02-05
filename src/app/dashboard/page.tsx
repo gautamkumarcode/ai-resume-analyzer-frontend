@@ -140,7 +140,7 @@ export default function DashboardPage() {
 									<p className="text-sm text-gray-500">
 										Resume:{" "}
 										{typeof match.resume === "object"
-											? match.resume.fileName
+											? match?.resume?.fileName
 											: "Resume"}
 									</p>
 								</div>
