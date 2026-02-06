@@ -6,23 +6,6 @@ export default function Home() {
 		<div className="min-h-screen">
 			{/* Hero Section */}
 			<header className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
-				<nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-					<div className="flex items-center space-x-2">
-						<Sparkles className="w-8 h-8" />
-						<span className="text-xl font-bold">AI Resume Analyzer</span>
-					</div>
-					<div className="space-x-4">
-						<Link href="/login" className="hover:underline">
-							Login
-						</Link>
-						<Link
-							href="/register"
-							className="bg-white text-primary-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-							Get Started
-						</Link>
-					</div>
-				</nav>
-
 				<div className="container mx-auto px-6 py-20 text-center">
 					<h1 className="text-5xl font-bold mb-6">
 						Land Your Dream Job with AI-Powered Resume Analysis
