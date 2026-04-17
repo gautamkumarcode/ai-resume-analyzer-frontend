@@ -64,3 +64,16 @@ export function useDeleteResume() {
 		},
 	});
 }
+
+export function useImproveResume() {
+	return useMutation({
+		mutationFn: ({ resumeId, jobId }: { resumeId: string; jobId: string }) =>
+			resumeService.improveResume(resumeId, jobId),
+		onError: (error: any) => {
+			toast.error(
+				error.response?.data?.message ||
+					"Failed to get improvement suggestions",
+			);
+		},
+	});
+}

@@ -98,3 +98,10 @@ export function useJobMatch(id: string) {
 		enabled: !!id,
 	});
 }
+
+export function useRecommendedJobs() {
+	return useQuery({
+		queryKey: ["recommendedJobs"],
+		queryFn: jobService.getRecommendedJobs,
+	});
+}

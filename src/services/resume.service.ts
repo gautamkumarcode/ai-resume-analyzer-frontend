@@ -1,19 +1,14 @@
 import api from "@/lib/api";
-import { ApiResponse, Resume } from "@/types";
+import { ApiResponse, ImprovementResult, Resume } from "@/types";
 
 export const resumeService = {
 	async uploadResume(file: File): Promise<Resume> {
 		const formData = new FormData();
 		formData.append("resume", file);
-
 		const response = await api.post<ApiResponse<{ resume: Resume }>>(
 			"/resumes/upload",
 			formData,
-			{
-				headers: {
-					"Content-Type": "multipart/form-data",
-				},
-			},
+			{ headers: { "Content-Type": "multipart/form-data" } },
 		);
 		return response.data.data!.resume;
 	},
@@ -40,5 +35,15 @@ export const resumeService = {
 
 	async deleteResume(id: string): Promise<void> {
 		await api.delete(`/resumes/${id}`);
+	},
+
+	async improveResume(
+		resumeId: string,
+		jobId: string,
+	): Promise<ImprovementResult> {
+		const response = await api.post<
+			ApiResponse<{ improvement: ImprovementResult }>
+		>(`/resumes/${resumeId}/improve`, { jobId });
+		return response.data.data!.improvement;
 	},
 };

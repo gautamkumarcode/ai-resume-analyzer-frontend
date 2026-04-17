@@ -13,6 +13,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 					queries: {
 						staleTime: 60 * 1000,
 						refetchOnWindowFocus: false,
+						retry: 1,
 					},
 				},
 			}),
@@ -22,7 +23,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
 				{children}
-				<Toaster position="top-right" />
+				<Toaster
+					position="top-right"
+					toastOptions={{
+						duration: 4000,
+						style: {
+							borderRadius: "10px",
+							fontSize: "14px",
+						},
+					}}
+				/>
 			</AuthProvider>
 		</QueryClientProvider>
 	);

@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@/types";
+import { User, UserRole } from "@/types";
 import {
 	createContext,
 	ReactNode,
@@ -18,13 +18,17 @@ interface AuthContextType {
 	logout: () => void;
 	isLoading: boolean;
 	isAuthenticated: boolean;
+	isRecruiter: boolean;
+	isCandidate: boolean;
+	isAdmin: boolean;
 }
 
-interface RegisterData {
+export interface RegisterData {
 	email: string;
 	password: string;
 	firstName: string;
 	lastName: string;
+	role: UserRole;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,10 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		// Check for stored auth on mount
 		const storedToken = localStorage.getItem("token");
 		const storedUser = localStorage.getItem("user");
-
 		if (storedToken && storedUser) {
 			setToken(storedToken);
 			setUser(JSON.parse(storedUser));
@@ -49,10 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const login = async (email: string, password: string) => {
 		const response = await api.post("/auth/login", { email, password });
 		const { user, token } = response.data.data;
-
 		localStorage.setItem("token", token);
 		localStorage.setItem("user", JSON.stringify(user));
-
 		setToken(token);
 		setUser(user);
 	};
@@ -60,10 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const register = async (data: RegisterData) => {
 		const response = await api.post("/auth/register", data);
 		const { user, token } = response.data.data;
-
 		localStorage.setItem("token", token);
 		localStorage.setItem("user", JSON.stringify(user));
-
 		setToken(token);
 		setUser(user);
 	};
@@ -73,6 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		localStorage.removeItem("user");
 		setToken(null);
 		setUser(null);
+		if (typeof window !== "undefined") {
+			window.location.href = "/login";
+		}
 	};
 
 	return (
@@ -85,6 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				logout,
 				isLoading,
 				isAuthenticated: !!token,
+				isRecruiter: user?.role === "recruiter",
+				isCandidate: user?.role === "candidate",
+				isAdmin: user?.role === "admin",
 			}}>
 			{children}
 		</AuthContext.Provider>

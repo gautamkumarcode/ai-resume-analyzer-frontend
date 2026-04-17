@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { ApiResponse, Job, JobMatch } from "@/types";
+import { ApiResponse, Job, JobMatch, RecommendedJob } from "@/types";
 
 export interface CreateJobData {
 	title: string;
@@ -65,5 +65,13 @@ export const jobService = {
 			`/jobs/matches/${id}`,
 		);
 		return response.data.data!.jobMatch;
+	},
+
+	async getRecommendedJobs(): Promise<RecommendedJob[]> {
+		const response =
+			await api.get<ApiResponse<{ jobs: RecommendedJob[] }>>(
+				"/jobs/recommended",
+			);
+		return response.data.data!.jobs;
 	},
 };

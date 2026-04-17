@@ -1,8 +1,12 @@
+export type UserRole = "candidate" | "recruiter" | "admin";
+
 export interface User {
 	id: string;
 	email: string;
 	firstName: string;
 	lastName: string;
+	role: UserRole;
+	active?: boolean;
 	createdAt?: string;
 }
 
@@ -110,4 +114,28 @@ export interface ApiResponse<T> {
 	data?: T;
 	message?: string;
 	error?: string;
+}
+
+export type ApplicationStatus = "applied" | "shortlisted" | "rejected";
+
+export interface Application {
+	_id: string;
+	candidateId: User | string;
+	jobId: Job | string;
+	resumeId?: Resume | string;
+	status: ApplicationStatus;
+	matchScore?: number;
+	appliedAt: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface ImprovementResult {
+	improvedBulletPoints: string[];
+	missingKeywords: string[];
+	formattingSuggestions: string[];
+}
+
+export interface RecommendedJob extends Job {
+	matchScore: number;
 }
