@@ -154,13 +154,16 @@ function CandidateDashboard() {
 								className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
 								<div className="min-w-0">
 									<p className="font-medium text-gray-900 truncate">
-										{typeof match.job === "object" ? match.job.title : "Job"} at{" "}
-										{typeof match.job === "object"
+										{match.job && typeof match.job === "object"
+											? match.job.title
+											: "Job"}{" "}
+										at{" "}
+										{match.job && typeof match.job === "object"
 											? match.job.company
 											: "Company"}
 									</p>
 									<p className="text-sm text-gray-500 truncate">
-										{typeof match.resume === "object"
+										{match.resume && typeof match.resume === "object"
 											? match.resume.fileName
 											: "Resume"}
 									</p>

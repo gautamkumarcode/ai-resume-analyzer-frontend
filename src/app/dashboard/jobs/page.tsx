@@ -112,9 +112,13 @@ export default function JobsPage() {
 	const appliedJobIds = useMemo(() => {
 		if (!isCandidate || !myApplications) return new Set<string>();
 		return new Set(
-			myApplications.map((app: any) =>
-				typeof app.jobId === "object" ? app.jobId._id : app.jobId,
-			),
+			myApplications
+				.filter((app: any) => app.jobId) // Filter out null/undefined jobId
+				.map((app: any) =>
+					app.jobId && typeof app.jobId === "object"
+						? app.jobId._id
+						: app.jobId,
+				),
 		);
 	}, [myApplications, isCandidate]);
 

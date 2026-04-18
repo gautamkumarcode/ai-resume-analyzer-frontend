@@ -4,11 +4,11 @@ import {
 	Briefcase,
 	CheckCircle,
 	FileText,
-	Sparkles,
 	TrendingUp,
 	Upload,
 	Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 // ── Data ──────────────────────────────────────────────────────────────────
@@ -109,7 +109,9 @@ export default function HomePage() {
 				<div className="relative container mx-auto px-6 py-24 lg:py-32 text-center">
 					{/* Badge */}
 					<div className="inline-flex items-center space-x-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-8">
-						<Sparkles className="w-4 h-4 text-yellow-300" aria-hidden="true" />
+						<div className="w-4 h-4 bg-yellow-300 rounded-full flex items-center justify-center">
+							<span className="text-xs">✨</span>
+						</div>
 						<span>Powered by Google Gemini AI</span>
 					</div>
 
@@ -308,7 +310,7 @@ export default function HomePage() {
 						Ready to get started?
 					</h2>
 					<p className="text-primary-100 text-lg mb-8 max-w-xl mx-auto">
-						Join candidates and recruiters already using ResumeAI to make
+						Join candidates and recruiters already using NextRole to make
 						smarter hiring decisions.
 					</p>
 					<Link
@@ -324,14 +326,17 @@ export default function HomePage() {
 			<footer className="bg-gray-900 text-gray-400 py-10">
 				<div className="container mx-auto px-6">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-						<div className="flex items-center space-x-2">
-							<div className="w-7 h-7 bg-primary-600 rounded-lg flex items-center justify-center">
-								<Sparkles className="w-4 h-4 text-white" aria-hidden="true" />
-							</div>
-							<span className="font-semibold text-white">ResumeAI</span>
-						</div>
+						<Link href="/" className="flex items-center">
+							<Image
+								src="/logo.png"
+								alt="NextRole"
+								width={120}
+								height={40}
+								className="object-contain h-8 w-auto"
+							/>
+						</Link>
 						<p className="text-sm">
-							&copy; {new Date().getFullYear()} ResumeAI. All rights reserved.
+							&copy; {new Date().getFullYear()} NextRole. All rights reserved.
 						</p>
 						<div className="flex items-center space-x-6 text-sm">
 							<Link

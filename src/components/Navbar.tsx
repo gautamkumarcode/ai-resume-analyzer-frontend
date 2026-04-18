@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { LogOut, Menu, Sparkles, User, X } from "lucide-react";
+import { LogOut, Menu, User, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -65,14 +66,16 @@ export default function Navbar() {
 					{/* ── Logo ── */}
 					<Link
 						href="/"
-						className="flex items-center gap-2.5 group flex-shrink-0"
-						aria-label="AI Resume Analyzer home">
-						<div className="w-9 h-9 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center group-hover:from-primary-700 group-hover:to-primary-800 transition-all shadow-sm">
-							<Sparkles className="w-5 h-5 text-white" aria-hidden="true" />
-						</div>
-						<span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-							AI Resume Analyzer
-						</span>
+						className="flex gap-3 group flex-shrink-0"
+						aria-label="NextRole home">
+						<Image
+							src="/logo.png"
+							alt="NextRole"
+							width={120}
+							height={40}
+							className="object-contain h-10 w-auto"
+							priority
+						/>
 					</Link>
 
 					{/* ── Centre anchor links — home + logged out only ── */}

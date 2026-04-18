@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -44,9 +45,14 @@ export default function LoginPage() {
 				<div className="text-center">
 					<Link
 						href="/"
-						className="inline-flex items-center space-x-2 text-primary-600">
-						<Sparkles className="w-10 h-10" />
-						<span className="text-2xl font-bold">AI Resume Analyzer</span>
+						className="inline-flex items-center justify-center mb-8">
+						<Image
+							src="/logo.png"
+							alt="NextRole"
+							width={180}
+							height={60}
+							className="object-contain h-16 w-auto"
+						/>
 					</Link>
 					<h2 className="mt-6 text-3xl font-bold text-gray-900">
 						Sign in to your account

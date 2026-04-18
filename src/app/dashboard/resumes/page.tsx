@@ -193,8 +193,8 @@ function ResumesContent() {
 													className={`px-3 py-1 rounded-full text-sm font-medium ${scoreColorClass(
 														resume.aiAnalysis.overallScore,
 													)}`}
-													aria-label={`Score: ${resume.aiAnalysis.overallScore} out of 100`}>
-													Score: {resume.aiAnalysis.overallScore}
+													aria-label={`ATS Score: ${resume.aiAnalysis.overallScore} out of 100`}>
+													ATS Score: {resume.aiAnalysis.overallScore}
 												</span>
 												{/* Re-analyze button */}
 												<button
@@ -272,6 +272,39 @@ function ResumesContent() {
 								{/* Expanded AI analysis */}
 								{expandedResume === resume._id && resume.aiAnalysis && (
 									<div className="mt-6 pt-6 border-t border-gray-200 space-y-6">
+										{/* ATS Score Card */}
+										<div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl p-6 border border-primary-200">
+											<div className="flex items-center justify-between">
+												<div>
+													<h4 className="text-sm font-medium text-primary-700 mb-1">
+														ATS Compatibility Score
+													</h4>
+													<p className="text-3xl font-bold text-primary-900">
+														{resume.aiAnalysis.overallScore}/100
+													</p>
+													<p className="text-sm text-primary-600 mt-2">
+														{resume.aiAnalysis.overallScore >= 80
+															? "Excellent - Highly likely to pass ATS screening"
+															: resume.aiAnalysis.overallScore >= 60
+																? "Good - Should pass most ATS systems with minor improvements"
+																: "Needs Improvement - May struggle with ATS screening"}
+													</p>
+												</div>
+												<div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center">
+													<div className="text-center">
+														<div className="text-2xl font-bold text-primary-600">
+															{resume.aiAnalysis.overallScore >= 80
+																? "A"
+																: resume.aiAnalysis.overallScore >= 60
+																	? "B"
+																	: "C"}
+														</div>
+														<div className="text-xs text-gray-500">Grade</div>
+													</div>
+												</div>
+											</div>
+										</div>
+
 										{/* Summary */}
 										<div>
 											<h4 className="font-semibold text-gray-900 mb-2">

@@ -7,8 +7,14 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-	title: "AI Resume Analyzer",
+	title: "NextRole - AI Resume Analyzer & Job Matching",
 	description: "AI-powered resume analysis and job matching platform",
+	icons: {
+		icon: "/icon.png",
+		shortcut: "/icon.png",
+		apple: "/icon.png",
+	},
+	manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -18,6 +24,10 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en" suppressHydrationWarning>
+			<head>
+				<link rel="icon" href="/icon.png" type="image/png" />
+				<link rel="apple-touch-icon" href="/icon.png" />
+			</head>
 			<body className={inter.className}>
 				<Providers>
 					<Navbar />
