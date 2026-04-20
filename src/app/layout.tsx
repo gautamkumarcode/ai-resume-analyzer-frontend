@@ -1,6 +1,6 @@
-import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import "../styles/brand.css";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -29,10 +29,7 @@ export default function RootLayout({
 				<link rel="apple-touch-icon" href="/icon.png" />
 			</head>
 			<body className={inter.className}>
-				<Providers>
-					<Navbar />
-					<div className="flex flex-col min-h-screen">{children}</div>
-				</Providers>
+				<Providers>{children}</Providers>
 			</body>
 		</html>
 	);

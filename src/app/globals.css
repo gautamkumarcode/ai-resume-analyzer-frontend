@@ -25,11 +25,38 @@
 		@apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
 	}
 
+	/* Brand gradient button */
+	.btn-brand {
+		@apply btn text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
+		background: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+	}
+
+	.btn-brand:hover {
+		background: linear-gradient(135deg, #0ea5e9 0%, #9333ea 100%);
+	}
+
 	.input {
 		@apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
 	}
 
 	.card {
 		@apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+	}
+
+	/* Brand gradient text */
+	.text-brand-gradient {
+		background: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	/* Brand gradient background */
+	.bg-brand-gradient {
+		background: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+	}
+
+	.bg-brand-gradient-hover:hover {
+		background: linear-gradient(135deg, #0ea5e9 0%, #9333ea 100%);
 	}
 }

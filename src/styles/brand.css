@@ -1,0 +1,78 @@
+/* NextRole Brand Colors - Extracted from Logo */
+:root {
+	/* Primary Brand Colors (Blue from logo) */
+	--brand-blue-50: #f0f9ff;
+	--brand-blue-100: #e0f2fe;
+	--brand-blue-200: #bae6fd;
+	--brand-blue-300: #7dd3fc;
+	--brand-blue-400: #38bdf8; /* Main logo blue */
+	--brand-blue-500: #0ea5e9;
+	--brand-blue-600: #0284c7;
+	--brand-blue-700: #0369a1;
+	--brand-blue-800: #075985;
+	--brand-blue-900: #0c4a6e;
+
+	/* Secondary Brand Colors (Purple from logo) */
+	--brand-purple-50: #faf5ff;
+	--brand-purple-100: #f3e8ff;
+	--brand-purple-200: #e9d5ff;
+	--brand-purple-300: #d8b4fe;
+	--brand-purple-400: #c084fc;
+	--brand-purple-500: #a855f7; /* Main logo purple */
+	--brand-purple-600: #9333ea;
+	--brand-purple-700: #7c3aed;
+	--brand-purple-800: #6b21a8;
+	--brand-purple-900: #581c87;
+
+	/* Brand Gradient */
+	--brand-gradient: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+	--brand-gradient-hover: linear-gradient(135deg, #0ea5e9 0%, #9333ea 100%);
+
+	/* Exact Logo Colors */
+	--logo-blue: #38bdf8;
+	--logo-purple: #a855f7;
+}
+
+/* Utility classes for easy use */
+.text-logo-blue {
+	color: var(--logo-blue);
+}
+.text-logo-purple {
+	color: var(--logo-purple);
+}
+.bg-logo-blue {
+	background-color: var(--logo-blue);
+}
+.bg-logo-purple {
+	background-color: var(--logo-purple);
+}
+
+/* Brand gradient utilities */
+.bg-brand-gradient {
+	background: var(--brand-gradient);
+}
+
+.bg-brand-gradient-hover:hover {
+	background: var(--brand-gradient-hover);
+}
+
+.text-brand-gradient {
+	background: var(--brand-gradient);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+/* Brand button with logo colors */
+.btn-brand {
+	background: var(--brand-gradient);
+	color: white;
+	border: none;
+	transition: all 0.2s ease;
+}
+
+.btn-brand:hover {
+	background: var(--brand-gradient-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
+}

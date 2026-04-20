@@ -28,10 +28,6 @@ export default function Navbar() {
 		setMobileOpen(false);
 	}, [pathname]);
 
-	// Hide on dashboard and admin — sidebar handles navigation there
-	if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin"))
-		return null;
-
 	const isHome = pathname === "/";
 
 	const getRoleBadge = () => {
