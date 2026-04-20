@@ -2,28 +2,29 @@
 
 import SkeletonCard from "@/components/SkeletonCard";
 import {
-    useApplyToJob,
-    useJobApplications,
-    useMyApplications,
-    useUpdateApplicationStatus,
+	useApplyToJob,
+	useJobApplications,
+	useMyApplications,
+	useUpdateApplicationStatus,
 } from "@/hooks/useApplication";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/useJob";
-import { useResumes } from "@/hooks/useResume";
+import { useResumes, useUploadResume } from "@/hooks/useResume";
 import { useAuth } from "@/lib/auth-context";
 import { Job } from "@/types";
 import {
-    Briefcase,
-    Building,
-    CheckCircle,
-    DollarSign,
-    Loader2,
-    MapPin,
-    Plus,
-    Search,
-    Send,
-    Trash2,
-    Users,
-    X,
+	Briefcase,
+	Building,
+	CheckCircle,
+	DollarSign,
+	Loader2,
+	MapPin,
+	Plus,
+	Search,
+	Send,
+	Trash2,
+	Upload,
+	Users,
+	X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -67,6 +68,8 @@ export default function JobsPage() {
 	const [selectedJobForApply, setSelectedJobForApply] = useState<Job | null>(
 		null,
 	);
+	const [selectedResumeId, setSelectedResumeId] = useState<string>("");
+	const [uploadingResume, setUploadingResume] = useState(false);
 
 	// Applicants modal state
 	const [applicantsModalOpen, setApplicantsModalOpen] = useState(false);
@@ -81,6 +84,7 @@ export default function JobsPage() {
 	const { data: myApplications } = useMyApplications();
 	const { data: resumes } = useResumes();
 	const applyMutation = useApplyToJob();
+	const uploadResumeMutation = useUploadResume();
 
 	// Recruiter hooks
 	const { data: applicants, isLoading: applicantsLoading } = useJobApplications(
@@ -158,6 +162,39 @@ export default function JobsPage() {
 	const closeModal = () => {
 		reset();
 		setShowModal(false);
+	};
+
+	const closeApplyModal = () => {
+		setApplyModalOpen(false);
+		setSelectedJobForApply(null);
+		setSelectedResumeId("");
+		setUploadingResume(false);
+	};
+
+	const handleResumeUpload = async (
+		event: React.ChangeEvent<HTMLInputElement>,
+	) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		setUploadingResume(true);
+		try {
+			await uploadResumeMutation.mutateAsync(file);
+			// Reset the file input
+			event.target.value = "";
+		} finally {
+			setUploadingResume(false);
+		}
+	};
+
+	const handleApplySubmit = async () => {
+		if (!selectedJobForApply) return;
+
+		await applyMutation.mutateAsync({
+			jobId: selectedJobForApply._id,
+			resumeId: selectedResumeId || undefined,
+		});
+		closeApplyModal();
 	};
 
 	return (
@@ -658,10 +695,7 @@ export default function JobsPage() {
 								Apply to Job
 							</h2>
 							<button
-								onClick={() => {
-									setApplyModalOpen(false);
-									setSelectedJobForApply(null);
-								}}
+								onClick={closeApplyModal}
 								className="p-2 text-gray-400 hover:text-gray-600"
 								aria-label="Close">
 								<X className="w-5 h-5" />
@@ -676,46 +710,71 @@ export default function JobsPage() {
 									{selectedJobForApply.company}
 								</p>
 							</div>
-							<div>
-								<label
-									htmlFor="apply-resume"
-									className="block text-sm font-medium text-gray-700 mb-1">
-									Select Resume (optional)
-								</label>
-								<select id="apply-resume" className="input">
-									<option value="">No resume</option>
-									{resumes?.map((r: any) => (
-										<option key={r._id} value={r._id}>
-											{r.fileName}
-										</option>
-									))}
-								</select>
-							</div>
+
+							{/* Resume Selection or Upload */}
+							{resumes && resumes.length > 0 ? (
+								<div>
+									<label
+										htmlFor="apply-resume"
+										className="block text-sm font-medium text-gray-700 mb-1">
+										Select Resume (optional)
+									</label>
+									<select
+										id="apply-resume"
+										className="input"
+										value={selectedResumeId}
+										onChange={(e) => setSelectedResumeId(e.target.value)}>
+										<option value="">No resume</option>
+										{resumes.map((r: any) => (
+											<option key={r._id} value={r._id}>
+												{r.fileName}
+											</option>
+										))}
+									</select>
+								</div>
+							) : (
+								<div>
+									<p className="text-sm text-gray-600 mb-3">
+										You don't have any resumes uploaded yet. Upload one to
+										improve your application.
+									</p>
+									<div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+										<Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+										<label htmlFor="resume-upload" className="cursor-pointer">
+											<span className="text-sm font-medium text-primary-600 hover:text-primary-500">
+												Upload Resume
+											</span>
+											<input
+												id="resume-upload"
+												type="file"
+												accept=".pdf,.doc,.docx"
+												onChange={handleResumeUpload}
+												disabled={uploadingResume}
+												className="hidden"
+											/>
+										</label>
+										<p className="text-xs text-gray-500 mt-1">
+											PDF, DOC, or DOCX up to 10MB
+										</p>
+										{uploadingResume && (
+											<div className="mt-2 flex items-center justify-center">
+												<Loader2 className="w-4 h-4 animate-spin mr-2" />
+												<span className="text-sm text-gray-600">
+													Uploading...
+												</span>
+											</div>
+										)}
+									</div>
+								</div>
+							)}
+
 							<div className="flex justify-end space-x-3">
-								<button
-									onClick={() => {
-										setApplyModalOpen(false);
-										setSelectedJobForApply(null);
-									}}
-									className="btn-secondary">
+								<button onClick={closeApplyModal} className="btn-secondary">
 									Cancel
 								</button>
 								<button
-									onClick={async () => {
-										const resumeId =
-											(
-												document.getElementById(
-													"apply-resume",
-												) as HTMLSelectElement
-											)?.value || undefined;
-										await applyMutation.mutateAsync({
-											jobId: selectedJobForApply._id,
-											resumeId,
-										});
-										setApplyModalOpen(false);
-										setSelectedJobForApply(null);
-									}}
-									disabled={applyMutation.isPending}
+									onClick={handleApplySubmit}
+									disabled={applyMutation.isPending || uploadingResume}
 									className="btn-primary flex items-center">
 									{applyMutation.isPending ? (
 										<Loader2 className="w-4 h-4 mr-2 animate-spin" />

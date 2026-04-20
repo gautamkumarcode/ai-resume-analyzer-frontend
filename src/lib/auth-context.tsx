@@ -1,14 +1,8 @@
 "use client";
 
+import { useAuth as useAuthHook, useLogin, useRegister } from "@/hooks/useAuth";
 import { User, UserRole } from "@/types";
-import {
-	createContext,
-	ReactNode,
-	useContext,
-	useEffect,
-	useState,
-} from "react";
-import api from "./api";
+import { createContext, ReactNode, useContext } from "react";
 
 interface AuthContextType {
 	user: User | null;
@@ -34,61 +28,34 @@ export interface RegisterData {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-	const [user, setUser] = useState<User | null>(null);
-	const [token, setToken] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-
-	useEffect(() => {
-		const storedToken = localStorage.getItem("token");
-		const storedUser = localStorage.getItem("user");
-		if (storedToken && storedUser) {
-			setToken(storedToken);
-			setUser(JSON.parse(storedUser));
-		}
-		setIsLoading(false);
-	}, []);
+	const auth = useAuthHook();
+	const loginMutation = useLogin();
+	const registerMutation = useRegister();
 
 	const login = async (email: string, password: string) => {
-		const response = await api.post("/auth/login", { email, password });
-		const { user, token } = response.data.data;
-		localStorage.setItem("token", token);
-		localStorage.setItem("user", JSON.stringify(user));
-		setToken(token);
-		setUser(user);
+		await loginMutation.mutateAsync({ email, password });
 	};
 
 	const register = async (data: RegisterData) => {
-		const response = await api.post("/auth/register", data);
-		const { user, token } = response.data.data;
-		localStorage.setItem("token", token);
-		localStorage.setItem("user", JSON.stringify(user));
-		setToken(token);
-		setUser(user);
-	};
-
-	const logout = () => {
-		localStorage.removeItem("token");
-		localStorage.removeItem("user");
-		setToken(null);
-		setUser(null);
-		if (typeof window !== "undefined") {
-			window.location.href = "/login";
-		}
+		await registerMutation.mutateAsync(data);
 	};
 
 	return (
 		<AuthContext.Provider
 			value={{
-				user,
-				token,
+				user: auth.user,
+				token: auth.token,
 				login,
 				register,
-				logout,
-				isLoading,
-				isAuthenticated: !!token,
-				isRecruiter: user?.role === "recruiter",
-				isCandidate: user?.role === "candidate",
-				isAdmin: user?.role === "admin",
+				logout: auth.logout,
+				isLoading:
+					auth.isLoading ||
+					loginMutation.isPending ||
+					registerMutation.isPending,
+				isAuthenticated: auth.isAuthenticated,
+				isRecruiter: auth.isRecruiter,
+				isCandidate: auth.isCandidate,
+				isAdmin: auth.isAdmin,
 			}}>
 			{children}
 		</AuthContext.Provider>

@@ -7,6 +7,15 @@ export interface User {
 	lastName: string;
 	role: UserRole;
 	active?: boolean;
+	phone?: string;
+	location?: string;
+	title?: string;
+	company?: string;
+	summary?: string;
+	experience?: string;
+	skills?: string[];
+	linkedin?: string;
+	website?: string;
 	createdAt?: string;
 }
 

@@ -11,9 +11,44 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			new QueryClient({
 				defaultOptions: {
 					queries: {
-						staleTime: 60 * 1000,
+						staleTime: 60 * 1000, // 1 minute
+						gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
 						refetchOnWindowFocus: false,
-						retry: 1,
+						refetchOnReconnect: true,
+						retry: (failureCount, error: any) => {
+							// Don't retry on 4xx errors except 408, 429
+							if (
+								error?.response?.status >= 400 &&
+								error?.response?.status < 500
+							) {
+								if (
+									error?.response?.status === 408 ||
+									error?.response?.status === 429
+								) {
+									return failureCount < 2;
+								}
+								return false;
+							}
+							// Retry on network errors and 5xx errors
+							return failureCount < 3;
+						},
+						retryDelay: (attemptIndex) =>
+							Math.min(1000 * 2 ** attemptIndex, 30000),
+					},
+					mutations: {
+						retry: (failureCount, error: any) => {
+							// Don't retry mutations on client errors
+							if (
+								error?.response?.status >= 400 &&
+								error?.response?.status < 500
+							) {
+								return false;
+							}
+							// Retry on network errors and 5xx errors
+							return failureCount < 2;
+						},
+						retryDelay: (attemptIndex) =>
+							Math.min(1000 * 2 ** attemptIndex, 10000),
 					},
 				},
 			}),
@@ -30,6 +65,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
 						style: {
 							borderRadius: "10px",
 							fontSize: "14px",
+						},
+						success: {
+							style: {
+								background: "#10B981",
+								color: "white",
+							},
+						},
+						error: {
+							style: {
+								background: "#EF4444",
+								color: "white",
+							},
 						},
 					}}
 				/>

@@ -4,18 +4,32 @@ import { CreateJobData, jobService } from "@/services/job.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
+// Query keys for React Query
+export const jobKeys = {
+	all: ["jobs"] as const,
+	lists: () => [...jobKeys.all, "list"] as const,
+	list: (filters: string) => [...jobKeys.lists(), { filters }] as const,
+	details: () => [...jobKeys.all, "detail"] as const,
+	detail: (id: string) => [...jobKeys.details(), id] as const,
+	matches: () => [...jobKeys.all, "matches"] as const,
+	match: (id: string) => [...jobKeys.matches(), id] as const,
+	recommended: () => [...jobKeys.all, "recommended"] as const,
+};
+
 export function useJobs() {
 	return useQuery({
-		queryKey: ["jobs"],
+		queryKey: jobKeys.lists(),
 		queryFn: jobService.getJobs,
+		staleTime: 2 * 60 * 1000, // 2 minutes
 	});
 }
 
 export function useJob(id: string) {
 	return useQuery({
-		queryKey: ["jobs", id],
+		queryKey: jobKeys.detail(id),
 		queryFn: () => jobService.getJob(id),
 		enabled: !!id,
+		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
 
@@ -24,8 +38,11 @@ export function useCreateJob() {
 
 	return useMutation({
 		mutationFn: jobService.createJob,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["jobs"] });
+		onSuccess: (newJob) => {
+			// Add the new job to the cache
+			queryClient.setQueryData(jobKeys.detail(newJob._id), newJob);
+			// Invalidate and refetch jobs list
+			queryClient.invalidateQueries({ queryKey: jobKeys.lists() });
 			toast.success("Job created successfully!");
 		},
 		onError: (error: any) => {
@@ -40,9 +57,11 @@ export function useUpdateJob() {
 	return useMutation({
 		mutationFn: ({ id, data }: { id: string; data: Partial<CreateJobData> }) =>
 			jobService.updateJob(id, data),
-		onSuccess: (data) => {
-			queryClient.invalidateQueries({ queryKey: ["jobs"] });
-			queryClient.setQueryData(["jobs", data._id], data);
+		onSuccess: (updatedJob) => {
+			// Update the job in cache
+			queryClient.setQueryData(jobKeys.detail(updatedJob._id), updatedJob);
+			// Invalidate jobs list to ensure consistency
+			queryClient.invalidateQueries({ queryKey: jobKeys.lists() });
 			toast.success("Job updated successfully!");
 		},
 		onError: (error: any) => {
@@ -56,8 +75,11 @@ export function useDeleteJob() {
 
 	return useMutation({
 		mutationFn: jobService.deleteJob,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["jobs"] });
+		onSuccess: (_, deletedJobId) => {
+			// Remove job from cache
+			queryClient.removeQueries({ queryKey: jobKeys.detail(deletedJobId) });
+			// Invalidate jobs list
+			queryClient.invalidateQueries({ queryKey: jobKeys.lists() });
 			toast.success("Job deleted successfully!");
 		},
 		onError: (error: any) => {
@@ -72,8 +94,13 @@ export function useMatchResumeToJob() {
 	return useMutation({
 		mutationFn: ({ resumeId, jobId }: { resumeId: string; jobId: string }) =>
 			jobService.matchResumeToJob(resumeId, jobId),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["jobMatches"] });
+		onSuccess: (newMatch) => {
+			// Add to matches cache
+			queryClient.setQueryData(jobKeys.match(newMatch._id), newMatch);
+			// Invalidate matches list
+			queryClient.invalidateQueries({ queryKey: jobKeys.matches() });
+			// Invalidate recommended jobs as they might change
+			queryClient.invalidateQueries({ queryKey: jobKeys.recommended() });
 			toast.success("Resume matched to job successfully!");
 		},
 		onError: (error: any) => {
@@ -86,22 +113,26 @@ export function useMatchResumeToJob() {
 
 export function useJobMatches() {
 	return useQuery({
-		queryKey: ["jobMatches"],
+		queryKey: jobKeys.matches(),
 		queryFn: jobService.getJobMatches,
+		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 }
 
 export function useJobMatch(id: string) {
 	return useQuery({
-		queryKey: ["jobMatches", id],
+		queryKey: jobKeys.match(id),
 		queryFn: () => jobService.getJobMatch(id),
 		enabled: !!id,
+		staleTime: 10 * 60 * 1000, // 10 minutes
 	});
 }
 
 export function useRecommendedJobs() {
 	return useQuery({
-		queryKey: ["recommendedJobs"],
+		queryKey: jobKeys.recommended(),
 		queryFn: jobService.getRecommendedJobs,
+		staleTime: 10 * 60 * 1000, // 10 minutes
+		retry: 1, // Don't retry too much for recommendations
 	});
 }
