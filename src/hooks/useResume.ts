@@ -77,11 +77,16 @@ export function useAnalyzeResume() {
 		},
 		onError: (error: any) => {
 			console.error("Resume analysis error:", error);
-			const message =
-				error.response?.data?.message ||
-				error.message ||
-				"Failed to analyze resume";
-			toast.error(message);
+			const status = error.response?.status;
+			const serverMsg: string = error.response?.data?.message ?? "";
+			if (status === 503 || status === 429 || serverMsg.includes("quota")) {
+				toast.error(
+					"AI quota exceeded — please wait a few minutes and try again.",
+					{ duration: 6000 },
+				);
+			} else {
+				toast.error(serverMsg || error.message || "Failed to analyze resume");
+			}
 		},
 	});
 }
