@@ -52,6 +52,7 @@ function ResumesContent() {
 		useState<string>("");
 	const [improvementResult, setImprovementResult] =
 		useState<ImprovementResult | null>(null);
+	const [showDebug, setShowDebug] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const { data: resumes, isLoading } = useResumes();
@@ -118,35 +119,100 @@ function ResumesContent() {
 					</p>
 				</div>
 
-				<div>
-					<input
-						ref={fileInputRef}
-						type="file"
-						accept=".pdf,.docx"
-						onChange={handleFileUpload}
-						className="hidden"
-						id="resume-upload"
-						aria-label="Upload resume file"
-					/>
-					<label
-						htmlFor="resume-upload"
-						className="btn-primary inline-flex items-center cursor-pointer">
-						{uploadMutation.isPending ? (
-							<Loader2
-								className="w-5 h-5 mr-2 animate-spin"
-								aria-hidden="true"
-							/>
-						) : (
-							<Upload className="w-5 h-5 mr-2" aria-hidden="true" />
-						)}
-						Upload Resume
-					</label>
+				<div className="flex items-center space-x-3">
+					<button
+						onClick={() => setShowDebug(!showDebug)}
+						className="btn-secondary text-sm"
+						title="Toggle debug info">
+						Debug
+					</button>
+					<div>
+						<input
+							ref={fileInputRef}
+							type="file"
+							accept=".pdf,.docx"
+							onChange={handleFileUpload}
+							className="hidden"
+							id="resume-upload"
+							aria-label="Upload resume file"
+						/>
+						<label
+							htmlFor="resume-upload"
+							className="btn-primary inline-flex items-center cursor-pointer">
+							{uploadMutation.isPending ? (
+								<Loader2
+									className="w-5 h-5 mr-2 animate-spin"
+									aria-hidden="true"
+								/>
+							) : (
+								<Upload className="w-5 h-5 mr-2" aria-hidden="true" />
+							)}
+							Upload Resume
+						</label>
+					</div>
 				</div>
 			</div>
 
 			<p className="text-xs text-gray-400">
 				Accepted formats: PDF, DOCX · Max size: {MAX_FILE_SIZE_MB}MB
 			</p>
+
+			{/* Debug Panel */}
+			{showDebug && (
+				<div className="card bg-gray-50 border-gray-200">
+					<h3 className="font-semibold text-gray-900 mb-3">
+						Debug Information
+					</h3>
+					<div className="space-y-2 text-sm">
+						<div>
+							<span className="font-medium">API URL:</span>{" "}
+							<span className="text-gray-600">
+								{process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}
+							</span>
+						</div>
+						<div>
+							<span className="font-medium">Resumes Query Status:</span>{" "}
+							<span className="text-gray-600">
+								{isLoading ? "Loading..." : "Loaded"}
+							</span>
+						</div>
+						<div>
+							<span className="font-medium">Resumes Count:</span>{" "}
+							<span className="text-gray-600">{resumes?.length || 0}</span>
+						</div>
+						<div>
+							<span className="font-medium">Upload Status:</span>{" "}
+							<span className="text-gray-600">
+								{uploadMutation.isPending
+									? "Uploading..."
+									: uploadMutation.isError
+										? "Error"
+										: "Ready"}
+							</span>
+						</div>
+						<div>
+							<span className="font-medium">Analyze Status:</span>{" "}
+							<span className="text-gray-600">
+								{analyzeMutation.isPending
+									? "Analyzing..."
+									: analyzeMutation.isError
+										? "Error"
+										: "Ready"}
+							</span>
+						</div>
+						{(uploadMutation.isError || analyzeMutation.isError) && (
+							<div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+								<span className="font-medium text-red-800">Last Error:</span>
+								<pre className="text-xs text-red-600 mt-1 whitespace-pre-wrap">
+									{uploadMutation.error?.message ||
+										analyzeMutation.error?.message ||
+										"Unknown error"}
+								</pre>
+							</div>
+						)}
+					</div>
+				</div>
+			)}
 
 			{/* Skeleton loaders */}
 			{isLoading && (

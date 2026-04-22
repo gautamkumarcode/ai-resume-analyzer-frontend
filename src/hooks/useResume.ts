@@ -40,10 +40,22 @@ export function useUploadResume() {
 			queryClient.setQueryData(resumeKeys.detail(newResume._id), newResume);
 			// Invalidate resumes list
 			queryClient.invalidateQueries({ queryKey: resumeKeys.lists() });
-			toast.success("Resume uploaded successfully!");
+
+			if (newResume.aiAnalysis) {
+				toast.success("Resume uploaded and analyzed successfully!");
+			} else {
+				toast.success(
+					"Resume uploaded successfully! Click 'Analyze' to get AI feedback.",
+				);
+			}
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to upload resume");
+			console.error("Resume upload error:", error);
+			const message =
+				error.response?.data?.message ||
+				error.message ||
+				"Failed to upload resume";
+			toast.error(message);
 		},
 	});
 }
@@ -64,7 +76,12 @@ export function useAnalyzeResume() {
 			toast.success("Resume analyzed successfully!");
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to analyze resume");
+			console.error("Resume analysis error:", error);
+			const message =
+				error.response?.data?.message ||
+				error.message ||
+				"Failed to analyze resume";
+			toast.error(message);
 		},
 	});
 }
