@@ -11,6 +11,7 @@ import {
 	LayoutDashboard,
 	LogOut,
 	Menu,
+	Mic,
 	User,
 	X,
 } from "lucide-react";
@@ -28,12 +29,14 @@ const CANDIDATE_NAV = [
 		icon: ClipboardCheck,
 	},
 	{ name: "My Matches", href: "/dashboard/matches", icon: BarChart3 },
+	{ name: "AI Interview", href: "/dashboard/interview", icon: Mic },
 	{ name: "Profile", href: "/dashboard/profile", icon: User },
 ];
 
 const RECRUITER_NAV = [
 	{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 	{ name: "My Jobs", href: "/dashboard/jobs", icon: Briefcase },
+	{ name: "Interviews", href: "/dashboard/interviews", icon: Mic },
 	{ name: "Profile", href: "/dashboard/profile", icon: User },
 ];
 

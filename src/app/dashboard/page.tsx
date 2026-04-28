@@ -4,20 +4,26 @@ import SkeletonCard from "@/components/SkeletonCard";
 import { useJobMatches, useJobs, useRecommendedJobs } from "@/hooks/useJob";
 import { useResumes } from "@/hooks/useResume";
 import { useAuth } from "@/lib/auth-context";
+import { useQueryClient } from "@tanstack/react-query";
 import { BarChart3, Briefcase, FileText, Plus, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
 
 // ── Candidate dashboard ────────────────────────────────────────────────────
 function CandidateDashboard() {
-	const { data: resumes, isLoading: resumesLoading } = useResumes();
+	const { data: resumes, isLoading: resumesLoading } = useResumes({
+		enabled: true,
+	});
 	const { data: jobs, isLoading: jobsLoading } = useJobs();
-	const { data: matches, isLoading: matchesLoading } = useJobMatches();
+	const { data: matches, isLoading: matchesLoading } = useJobMatches({
+		enabled: true,
+	});
 	const {
 		data: recommendedJobs,
 		isLoading: recommendedLoading,
 		isError: recommendedError,
 		error: recommendedErrorData,
-	} = useRecommendedJobs();
+	} = useRecommendedJobs({ enabled: true });
 
 	const stats = [
 		{
@@ -384,7 +390,31 @@ function RecruiterDashboard() {
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function DashboardPage() {
-	const { user, isRecruiter } = useAuth();
+	const { user, isRecruiter, isCandidate, isLoading } = useAuth();
+
+	// Clear candidate-only cached queries when a recruiter is viewing
+	// This prevents stale cache from firing 403 requests
+	const queryClient = useQueryClient();
+	useEffect(() => {
+		if (!isLoading && isRecruiter) {
+			queryClient.removeQueries({ queryKey: ["resumes"] });
+			queryClient.removeQueries({ queryKey: ["jobs", "matches"] });
+			queryClient.removeQueries({ queryKey: ["jobs", "recommended"] });
+		}
+	}, [isLoading, isRecruiter, queryClient]);
+
+	if (isLoading) {
+		return (
+			<div className="space-y-8">
+				<div className="h-10 bg-gray-200 rounded w-64 animate-pulse" />
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+					{[1, 2, 3].map((i) => (
+						<div key={i} className="card animate-pulse h-24" />
+					))}
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="space-y-8">

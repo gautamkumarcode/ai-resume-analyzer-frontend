@@ -13,11 +13,12 @@ export const resumeKeys = {
 	detail: (id: string) => [...resumeKeys.details(), id] as const,
 };
 
-export function useResumes() {
+export function useResumes(options?: { enabled?: boolean }) {
 	return useQuery({
 		queryKey: resumeKeys.lists(),
 		queryFn: resumeService.getResumes,
-		staleTime: 5 * 60 * 1000, // 5 minutes
+		enabled: options?.enabled !== false,
+		staleTime: 5 * 60 * 1000,
 	});
 }
 

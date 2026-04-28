@@ -9,12 +9,15 @@ import {
 } from "@/hooks/useApplication";
 import { useCreateJob, useDeleteJob, useJobs } from "@/hooks/useJob";
 import { useResumes, useUploadResume } from "@/hooks/useResume";
+import api from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { Job } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
 	Briefcase,
 	Building,
 	CheckCircle,
+	ClipboardList,
 	DollarSign,
 	Loader2,
 	MapPin,
@@ -75,6 +78,31 @@ export default function JobsPage() {
 	const [applicantsModalOpen, setApplicantsModalOpen] = useState(false);
 	const [selectedJobForApplicants, setSelectedJobForApplicants] =
 		useState<Job | null>(null);
+
+	// Interview questions modal state
+	const [iqModalOpen, setIqModalOpen] = useState(false);
+	const [selectedJobForIQ, setSelectedJobForIQ] = useState<Job | null>(null);
+	const [iqList, setIqList] = useState<string[]>([]);
+	const [iqInput, setIqInput] = useState("");
+	const queryClient = useQueryClient();
+	const saveIQMutation = useMutation({
+		mutationFn: async ({
+			jobId,
+			questions,
+		}: {
+			jobId: string;
+			questions: string[];
+		}) => {
+			await api.put(`/jobs/${jobId}/interview-questions`, { questions });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["jobs"] });
+			setIqModalOpen(false);
+			import("react-hot-toast").then(({ default: toast }) =>
+				toast.success("Interview questions saved!"),
+			);
+		},
+	});
 
 	const { data: jobs, isLoading } = useJobs();
 	const createMutation = useCreateJob();
@@ -368,6 +396,25 @@ export default function JobsPage() {
 											View Applicants
 										</button>
 									)}
+
+									{/* Recruiter interview questions button */}
+									{isRecruiter && (
+										<button
+											onClick={() => {
+												setSelectedJobForIQ(job);
+												setIqList((job as any).interviewQuestions ?? []);
+												setIqInput("");
+												setIqModalOpen(true);
+											}}
+											className="btn-secondary text-sm flex items-center"
+											title="Set interview questions">
+											<ClipboardList
+												className="w-4 h-4 mr-2"
+												aria-hidden="true"
+											/>
+											Questions
+										</button>
+									)}
 								</div>
 							</div>
 
@@ -462,6 +509,120 @@ export default function JobsPage() {
 							Post Job
 						</button>
 					)}
+				</div>
+			)}
+
+			{/* Interview Questions Modal */}
+			{iqModalOpen && selectedJobForIQ && (
+				<div
+					className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+					role="dialog"
+					aria-modal="true">
+					<div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+						<div className="flex items-center justify-between p-6 border-b border-gray-200">
+							<div>
+								<h2 className="text-xl font-semibold text-gray-900">
+									Interview Questions
+								</h2>
+								<p className="text-sm text-gray-500 mt-0.5">
+									{selectedJobForIQ.title} — {selectedJobForIQ.company}
+								</p>
+							</div>
+							<button
+								onClick={() => setIqModalOpen(false)}
+								className="p-2 text-gray-400 hover:text-gray-600"
+								aria-label="Close">
+								<X className="w-5 h-5" />
+							</button>
+						</div>
+
+						<div className="p-6 space-y-4">
+							<p className="text-sm text-gray-600">
+								Add your own questions. If none are set, AI will generate
+								questions automatically.
+							</p>
+
+							{/* Add question input */}
+							<div className="flex gap-2">
+								<input
+									value={iqInput}
+									onChange={(e) => setIqInput(e.target.value)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter" && iqInput.trim()) {
+											setIqList((prev) => [...prev, iqInput.trim()]);
+											setIqInput("");
+										}
+									}}
+									placeholder="Type a question and press Enter..."
+									className="input flex-1"
+								/>
+								<button
+									onClick={() => {
+										if (iqInput.trim()) {
+											setIqList((prev) => [...prev, iqInput.trim()]);
+											setIqInput("");
+										}
+									}}
+									className="btn-primary px-4">
+									<Plus className="w-4 h-4" />
+								</button>
+							</div>
+
+							{/* Questions list */}
+							{iqList.length > 0 ? (
+								<ul className="space-y-2">
+									{iqList.map((q, i) => (
+										<li
+											key={i}
+											className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+											<span className="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+												{i + 1}
+											</span>
+											<span className="flex-1 text-sm text-gray-800">{q}</span>
+											<button
+												onClick={() =>
+													setIqList((prev) =>
+														prev.filter((_, idx) => idx !== i),
+													)
+												}
+												className="text-red-400 hover:text-red-600 flex-shrink-0"
+												aria-label="Remove question">
+												<X className="w-4 h-4" />
+											</button>
+										</li>
+									))}
+								</ul>
+							) : (
+								<div className="text-center py-6 text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-lg">
+									No questions yet — AI will generate them automatically
+								</div>
+							)}
+
+							<div className="flex justify-end gap-3 pt-2">
+								<button
+									onClick={() => setIqModalOpen(false)}
+									className="btn-secondary">
+									Cancel
+								</button>
+								<button
+									onClick={() =>
+										saveIQMutation.mutate({
+											jobId: selectedJobForIQ._id,
+											questions: iqList,
+										})
+									}
+									disabled={saveIQMutation.isPending}
+									className="btn-primary flex items-center gap-2">
+									{saveIQMutation.isPending ? (
+										<Loader2 className="w-4 h-4 animate-spin" />
+									) : (
+										<CheckCircle className="w-4 h-4" />
+									)}
+									Save Questions
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 

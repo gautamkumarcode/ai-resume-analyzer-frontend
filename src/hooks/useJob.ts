@@ -111,11 +111,12 @@ export function useMatchResumeToJob() {
 	});
 }
 
-export function useJobMatches() {
+export function useJobMatches(options?: { enabled?: boolean }) {
 	return useQuery({
 		queryKey: jobKeys.matches(),
 		queryFn: jobService.getJobMatches,
-		staleTime: 5 * 60 * 1000, // 5 minutes
+		enabled: options?.enabled !== false,
+		staleTime: 5 * 60 * 1000,
 	});
 }
 
@@ -124,15 +125,16 @@ export function useJobMatch(id: string) {
 		queryKey: jobKeys.match(id),
 		queryFn: () => jobService.getJobMatch(id),
 		enabled: !!id,
-		staleTime: 10 * 60 * 1000, // 10 minutes
+		staleTime: 10 * 60 * 1000,
 	});
 }
 
-export function useRecommendedJobs() {
+export function useRecommendedJobs(options?: { enabled?: boolean }) {
 	return useQuery({
 		queryKey: jobKeys.recommended(),
 		queryFn: jobService.getRecommendedJobs,
-		staleTime: 10 * 60 * 1000, // 10 minutes
-		retry: 1, // Don't retry too much for recommendations
+		enabled: options?.enabled !== false,
+		staleTime: 10 * 60 * 1000,
+		retry: 1,
 	});
 }

@@ -20,15 +20,19 @@ api.interceptors.request.use((config) => {
 	return config;
 });
 
-// Handle auth errors
+// Handle auth errors — only redirect if NOT already on /login
 api.interceptors.response.use(
 	(response) => response,
 	(error) => {
 		if (error.response?.status === 401) {
 			if (typeof window !== "undefined") {
-				localStorage.removeItem("token");
-				localStorage.removeItem("user");
-				window.location.href = "/login";
+				const isLoginPage = window.location.pathname === "/login";
+				if (!isLoginPage) {
+					localStorage.removeItem("token");
+					localStorage.removeItem("user");
+					// Don't hard-reload — let React Router handle it
+					window.location.replace("/login");
+				}
 			}
 		}
 		return Promise.reject(error);

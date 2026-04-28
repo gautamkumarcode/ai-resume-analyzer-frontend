@@ -148,3 +148,30 @@ export interface ImprovementResult {
 export interface RecommendedJob extends Job {
 	matchScore: number;
 }
+
+export interface InterviewAnswer {
+	question: string;
+	answer: string;
+	score: number;
+	feedback: string;
+}
+
+export interface Interview {
+	_id: string;
+	candidate:
+		| { _id: string; firstName: string; lastName: string; email: string }
+		| string;
+	job:
+		| { _id: string; title: string; company: string; location?: string }
+		| string;
+	resume: { _id: string; fileName: string } | string;
+	answers: InterviewAnswer[];
+	overallScore: number;
+	fitLevel: "excellent" | "good" | "average" | "poor";
+	summary: string;
+	strengths: string[];
+	concerns: string[];
+	status: "in_progress" | "completed";
+	completedAt?: string;
+	createdAt: string;
+}

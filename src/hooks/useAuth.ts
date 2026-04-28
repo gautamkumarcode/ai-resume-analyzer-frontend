@@ -1,81 +1,118 @@
 "use client";
 
-import {
-    authService
-} from "@/services/auth.service";
+import { authService } from "@/services/auth.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import toast from "react-hot-toast";
 
-// Query keys for React Query
 export const authKeys = {
 	all: ["auth"] as const,
 	profile: () => [...authKeys.all, "profile"] as const,
 };
 
-// Custom hook for authentication state
-export function useAuthState() {
-	const [token, setToken] = useState<string | null>(null);
-	const [isInitialized, setIsInitialized] = useState(false);
+// ---------------------------------------------------------------------------
+// Module-level token store — shared across ALL hook instances
+// ---------------------------------------------------------------------------
+type Listener = () => void;
+const listeners = new Set<Listener>();
 
-	useEffect(() => {
-		const storedToken = localStorage.getItem("token");
-		if (storedToken) {
-			setToken(storedToken);
-		}
-		setIsInitialized(true);
-	}, []);
+let _token: string | null = null;
+let _initialized = false;
 
-	const setAuthToken = (newToken: string | null) => {
-		setToken(newToken);
-		if (newToken) {
-			localStorage.setItem("token", newToken);
+function notifyListeners() {
+	listeners.forEach((l) => l());
+}
+
+function initToken() {
+	if (_initialized) return;
+	_initialized = true;
+	if (typeof window !== "undefined") {
+		_token = localStorage.getItem("token");
+	}
+	notifyListeners();
+}
+
+export function setToken(token: string | null) {
+	_token = token;
+	if (typeof window !== "undefined") {
+		if (token) {
+			localStorage.setItem("token", token);
 		} else {
 			localStorage.removeItem("token");
+			localStorage.removeItem("user");
 		}
-	};
+	}
+	notifyListeners();
+}
+
+function subscribe(listener: Listener) {
+	listeners.add(listener);
+	return () => listeners.delete(listener);
+}
+
+// Return primitives — NOT objects — so useSyncExternalStore can compare by value
+const getTokenSnapshot = () => _token;
+const getInitializedSnapshot = () => _initialized;
+const getServerToken = () => null;
+const getServerInitialized = () => false;
+
+// ---------------------------------------------------------------------------
+// Hooks
+// ---------------------------------------------------------------------------
+export function useAuthState() {
+	if (typeof window !== "undefined" && !_initialized) {
+		initToken();
+	}
+
+	const token = useSyncExternalStore(
+		subscribe,
+		getTokenSnapshot,
+		getServerToken,
+	);
+	const initialized = useSyncExternalStore(
+		subscribe,
+		getInitializedSnapshot,
+		getServerInitialized,
+	);
 
 	return {
 		token,
-		setToken: setAuthToken,
-		isInitialized,
+		isInitialized: initialized,
 		isAuthenticated: !!token,
 	};
 }
 
-// Hook for user profile data
 export function useProfile() {
-	const { token, isAuthenticated } = useAuthState();
+	const { token, isAuthenticated, isInitialized } = useAuthState();
 
 	return useQuery({
 		queryKey: authKeys.profile(),
 		queryFn: authService.getProfile,
-		enabled: isAuthenticated && !!token,
-		staleTime: 5 * 60 * 1000, // 5 minutes
+		enabled: isInitialized && isAuthenticated && !!token,
+		staleTime: 5 * 60 * 1000,
 		retry: (failureCount, error: any) => {
-			// Don't retry on 401 errors (unauthorized)
-			if (error?.response?.status === 401) {
-				return false;
-			}
+			if (error?.response?.status === 401) return false;
 			return failureCount < 2;
 		},
 	});
 }
 
-// Hook for login mutation
+// Module-level guard — prevents double logout
+let isLoggingOut = false;
+
 export function useLogin() {
 	const queryClient = useQueryClient();
-	const { setToken } = useAuthState();
 	const router = useRouter();
 
 	return useMutation({
 		mutationFn: authService.login,
 		onSuccess: (data) => {
+			isLoggingOut = false;
 			setToken(data.token);
-			// Set user data in cache
 			queryClient.setQueryData(authKeys.profile(), data.user);
-			toast.success("Login successful!");
+			toast.dismiss();
+			toast.success("Welcome back!");
 			router.push("/dashboard");
 		},
 		onError: (error: any) => {
@@ -84,19 +121,18 @@ export function useLogin() {
 	});
 }
 
-// Hook for register mutation
 export function useRegister() {
 	const queryClient = useQueryClient();
-	const { setToken } = useAuthState();
 	const router = useRouter();
 
 	return useMutation({
 		mutationFn: authService.register,
 		onSuccess: (data) => {
+			isLoggingOut = false;
 			setToken(data.token);
-			// Set user data in cache
 			queryClient.setQueryData(authKeys.profile(), data.user);
-			toast.success("Registration successful!");
+			toast.dismiss();
+			toast.success("Account created! Welcome to NextRole.");
 			router.push("/dashboard");
 		},
 		onError: (error: any) => {
@@ -105,16 +141,13 @@ export function useRegister() {
 	});
 }
 
-// Hook for profile update mutation
 export function useUpdateProfile() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: authService.updateProfile,
 		onSuccess: (updatedUser) => {
-			// Update the profile cache
 			queryClient.setQueryData(authKeys.profile(), updatedUser);
-			// Invalidate to ensure fresh data
 			queryClient.invalidateQueries({ queryKey: authKeys.profile() });
 			toast.success("Profile updated successfully!");
 		},
@@ -124,52 +157,56 @@ export function useUpdateProfile() {
 	});
 }
 
-// Hook for logout
 export function useLogout() {
 	const queryClient = useQueryClient();
-	const { setToken } = useAuthState();
 	const router = useRouter();
 
-	const logout = () => {
-		setToken(null);
-		localStorage.removeItem("user"); // Remove old user data
-		// Clear all cached data
-		queryClient.clear();
-		router.push("/login");
-		toast.success("Logged out successfully");
-	};
+	return () => {
+		if (isLoggingOut) return;
+		isLoggingOut = true;
 
-	return logout;
+		setToken(null);
+		queryClient.cancelQueries();
+		queryClient.clear();
+		toast.dismiss();
+		toast.success("Logged out successfully");
+		router.replace("/login");
+
+		setTimeout(() => {
+			isLoggingOut = false;
+		}, 2000);
+	};
 }
 
-// Main auth hook that combines everything
 export function useAuth() {
 	const { token, isAuthenticated, isInitialized } = useAuthState();
 	const { data: user, isLoading: isProfileLoading, error } = useProfile();
 	const logout = useLogout();
+	const logoutCalledRef = useRef(false);
 
-	// Handle auth errors (like token expiration)
 	useEffect(() => {
-		if (error && (error as any)?.response?.status === 401) {
+		if (
+			error &&
+			(error as any)?.response?.status === 401 &&
+			!logoutCalledRef.current
+		) {
+			logoutCalledRef.current = true;
 			logout();
 		}
-	}, [error, logout]);
+	}, [error]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	useEffect(() => {
+		if (isAuthenticated) logoutCalledRef.current = false;
+	}, [isAuthenticated]);
 
 	return {
-		// User data
 		user: user || null,
 		token,
-
-		// Loading states
 		isLoading: !isInitialized || (isAuthenticated && isProfileLoading),
 		isAuthenticated,
-
-		// Role helpers
 		isRecruiter: user?.role === "recruiter",
 		isCandidate: user?.role === "candidate",
 		isAdmin: user?.role === "admin",
-
-		// Actions
 		logout,
 	};
 }

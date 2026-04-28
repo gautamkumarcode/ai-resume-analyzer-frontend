@@ -29,6 +29,8 @@ export default function Navbar() {
 	}, [pathname]);
 
 	const isHome = pathname === "/";
+	// On the landing page, treat as public regardless of auth state
+	const isPublic = isHome;
 
 	const getRoleBadge = () => {
 		if (isAdmin) {
@@ -74,8 +76,8 @@ export default function Navbar() {
 						/>
 					</Link>
 
-					{/* ── Centre anchor links — home + logged out only ── */}
-					{isHome && !user && !isLoading && (
+					{/* ── Centre anchor links — home only ── */}
+					{isHome && (
 						<nav
 							className="hidden md:flex items-center gap-8"
 							aria-label="Page sections">
@@ -92,13 +94,12 @@ export default function Navbar() {
 
 					{/* ── Desktop right ── */}
 					<div className="hidden md:flex items-center gap-4">
-						{isLoading ? (
-							/* Skeleton while auth resolves — prevents layout shift */
+						{isLoading && !isPublic ? (
 							<div className="flex items-center gap-3">
 								<div className="h-9 w-20 bg-gray-100 rounded-lg animate-pulse" />
 								<div className="h-9 w-32 bg-gray-100 rounded-lg animate-pulse" />
 							</div>
-						) : !user ? (
+						) : !user || isPublic ? (
 							<>
 								<Link
 									href="/login"
@@ -173,12 +174,12 @@ export default function Navbar() {
 			{mobileOpen && (
 				<div className="md:hidden border-t border-gray-200 bg-white shadow-xl">
 					<div className="px-4 py-5 space-y-2">
-						{isLoading ? (
+						{isLoading && !isPublic ? (
 							<div className="space-y-3 p-2">
 								<div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
 								<div className="h-10 bg-gray-100 rounded-lg animate-pulse" />
 							</div>
-						) : !user ? (
+						) : !user || isPublic ? (
 							<>
 								{isHome &&
 									PUBLIC_NAV.map((item) => (

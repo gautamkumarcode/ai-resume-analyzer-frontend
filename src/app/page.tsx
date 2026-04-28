@@ -1,3 +1,4 @@
+import GuestGuard from "@/components/GuestGuard";
 import Navbar from "@/components/Navbar";
 import {
 	ArrowRight,
@@ -100,7 +101,7 @@ const STATS = [
 
 export default function HomePage() {
 	return (
-		<>
+		<GuestGuard>
 			<Navbar />
 			<div className="min-h-screen bg-white">
 				{/* ── Hero ── */}
@@ -361,6 +362,6 @@ export default function HomePage() {
 					</div>
 				</footer>
 			</div>
-		</>
+		</GuestGuard>
 	);
 }
