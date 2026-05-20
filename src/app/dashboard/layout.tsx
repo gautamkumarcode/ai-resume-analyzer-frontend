@@ -12,6 +12,7 @@ import {
 	LogOut,
 	Menu,
 	Mic,
+	Sparkles,
 	User,
 	X,
 } from "lucide-react";
@@ -21,6 +22,7 @@ import { useState } from "react";
 
 const CANDIDATE_NAV = [
 	{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+	{ name: "Job Scout", href: "/dashboard/job-scout", icon: Sparkles },
 	{ name: "My Resumes", href: "/dashboard/resumes", icon: FileText },
 	{ name: "Job Board", href: "/dashboard/jobs", icon: Briefcase },
 	{

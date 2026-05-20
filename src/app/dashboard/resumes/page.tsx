@@ -60,6 +60,7 @@ function ResumesContent() {
 	const deleteMutation = useDeleteResume();
 	const improveMutation = useImproveResume();
 	const { data: jobs } = useJobs();
+	const isUploadingResume = uploadMutation.isPending;
 
 	const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -124,12 +125,13 @@ function ResumesContent() {
 						onChange={handleFileUpload}
 						className="hidden"
 						id="resume-upload"
+						disabled={isUploadingResume}
 						aria-label="Upload resume file"
 					/>
 					<label
 						htmlFor="resume-upload"
 						className="btn-primary inline-flex items-center cursor-pointer">
-						{uploadMutation.isPending ? (
+						{isUploadingResume ? (
 							<Loader2
 								className="w-5 h-5 mr-2 animate-spin"
 								aria-hidden="true"
@@ -142,9 +144,9 @@ function ResumesContent() {
 				</div>
 			</div>
 
-			<p className="text-xs text-gray-400">
+			{/* <p className="text-xs text-gray-400">
 				Accepted formats: PDF, DOCX · Max size: {MAX_FILE_SIZE_MB}MB
-			</p>
+			</p> */}
 
 			{/* Quota warning banner — shown when last analyze attempt hit quota */}
 			{analyzeMutation.isError &&
@@ -178,10 +180,6 @@ function ResumesContent() {
 					}
 					return null;
 				})()}
-
-			<p className="text-xs text-gray-400">
-				Accepted formats: PDF, DOCX · Max size: {MAX_FILE_SIZE_MB}MB
-			</p>
 
 			{/* Skeleton loaders */}
 			{isLoading && (
@@ -527,8 +525,15 @@ function ResumesContent() {
 					<label
 						htmlFor="resume-upload"
 						className="btn-primary inline-flex items-center cursor-pointer">
-						<Upload className="w-5 h-5 mr-2" aria-hidden="true" />
-						Upload Resume
+						{isUploadingResume ? (
+							<Loader2
+								className="w-5 h-5 mr-2 animate-spin"
+								aria-hidden="true"
+							/>
+						) : (
+							<Upload className="w-5 h-5 mr-2" aria-hidden="true" />
+						)}
+						{isUploadingResume ? "Uploading..." : "Upload Resume"}
 					</label>
 				</div>
 			)}

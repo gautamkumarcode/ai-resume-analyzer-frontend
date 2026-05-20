@@ -1,5 +1,6 @@
 "use client";
 
+import JobScoutPanel from "@/components/JobScoutPanel";
 import SkeletonCard from "@/components/SkeletonCard";
 import { useJobMatches, useJobs, useRecommendedJobs } from "@/hooks/useJob";
 import { useResumes } from "@/hooks/useResume";
@@ -18,12 +19,7 @@ function CandidateDashboard() {
 	const { data: matches, isLoading: matchesLoading } = useJobMatches({
 		enabled: true,
 	});
-	const {
-		data: recommendedJobs,
-		isLoading: recommendedLoading,
-		isError: recommendedError,
-		error: recommendedErrorData,
-	} = useRecommendedJobs({ enabled: true });
+	useRecommendedJobs({ enabled: true });
 
 	const stats = [
 		{
@@ -194,60 +190,8 @@ function CandidateDashboard() {
 				)}
 			</div>
 
-			{/* Recommended Jobs */}
-			{!recommendedError && (
-				<div className="card">
-					<div className="flex items-center justify-between mb-4">
-						<h2 className="text-xl font-semibold text-gray-900">
-							Recommended Jobs
-						</h2>
-					</div>
-					{recommendedLoading ? (
-						<div className="space-y-3">
-							{[1, 2, 3].map((i) => (
-								<SkeletonCard key={i} lines={2} />
-							))}
-						</div>
-					) : (recommendedErrorData as any)?.response?.status === 400 ? (
-						<div className="text-center py-8">
-							<p className="text-gray-600 mb-4">
-								Upload a resume to get personalized job recommendations
-							</p>
-							<Link
-								href="/dashboard/resumes"
-								className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-								<Plus className="w-4 h-4 mr-2" aria-hidden="true" />
-								Upload Resume
-							</Link>
-						</div>
-					) : recommendedJobs && recommendedJobs.length > 0 ? (
-						<div className="space-y-3">
-							{recommendedJobs.slice(0, 5).map((job) => (
-								<div
-									key={job._id}
-									className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors">
-									<div className="min-w-0 flex-1">
-										<p className="font-medium text-gray-900 truncate">
-											{job.title}
-										</p>
-										<p className="text-sm text-gray-500 truncate">
-											{job.company}
-											{job.location ? ` · ${job.location}` : ""}
-										</p>
-									</div>
-									<span className="ml-4 flex-shrink-0 px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-700">
-										{job.matchScore}% match
-									</span>
-								</div>
-							))}
-						</div>
-					) : (
-						<p className="text-gray-500 text-center py-8">
-							No recommendations available at this time.
-						</p>
-					)}
-				</div>
-			)}
+			{/* Job Scout Bot */}
+			<JobScoutPanel />
 		</div>
 	);
 }

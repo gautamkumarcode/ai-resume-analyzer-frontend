@@ -129,12 +129,18 @@ export function useJobMatch(id: string) {
 	});
 }
 
-export function useRecommendedJobs(options?: { enabled?: boolean }) {
+export function useRecommendedJobs(options?: {
+	enabled?: boolean;
+	refetchInterval?: number | false;
+	refetchOnWindowFocus?: boolean;
+}) {
 	return useQuery({
 		queryKey: jobKeys.recommended(),
 		queryFn: jobService.getRecommendedJobs,
 		enabled: options?.enabled !== false,
 		staleTime: 10 * 60 * 1000,
+		refetchInterval: options?.refetchInterval,
+		refetchOnWindowFocus: options?.refetchOnWindowFocus ?? false,
 		retry: 1,
 	});
 }
